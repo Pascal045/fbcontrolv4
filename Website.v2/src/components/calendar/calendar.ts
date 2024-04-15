@@ -141,7 +141,8 @@ export default class WebCalendar extends PageMixin(LitElement) {
     if (state.rooms.length > 0) {
       state.rooms.forEach(room => {
         if (!room.hidden) {
-          this.rooms.set(room.id, {room, checked: this.rooms.get(room.id) ? !!this.rooms.get(room.id)?.checked : true});
+          // When the roomname is equal to "Musikzimmer" the checkbox is false
+          this.rooms.set(room.id, {room, checked: room.title !== 'Musikzimmer'});
         }
       });
       this.filterEvents();
