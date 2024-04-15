@@ -261,8 +261,7 @@ export default class WebCalendar extends PageMixin(LitElement) {
       weekNumbers: true,
       navLinks: true, // can click day/week names to navigate views
       editable: true,
-      dayMaxEvents: true, // allow "more" link when too many events
-      dayMaxEventRows: 1,
+      dayMaxEvents: 3, // allow "more" link when too many events
       themeSystem: 'bootstrap',
       height: window.innerHeight - (navEle? navEle[0].offsetHeight : 0) - 2 * oneRem,
       eventClick: (info) => {
