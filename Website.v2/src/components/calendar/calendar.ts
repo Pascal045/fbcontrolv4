@@ -79,7 +79,7 @@ export default class WebCalendar extends PageMixin(LitElement) {
               <h4>Angezeigte Räume</h4>
               ${[...this.rooms.values()].map(roomObj => {const room = roomObj.room; return html`
               <div class="form-check form-check-inline user-select-none">
-                <input class="form-check-input" type="checkbox" id=${'room-' + room.id} value=${room.id} ?checked=${roomObj.checked} @input=${() => this.roomFilter(room.id)} style=${styleMap({ borderColor: room.eventColor, backgroundColor: room.eventColor})}>
+              <input class="form-check-input" type="checkbox" id=${'room-' + room.id} value=${room.id} ?checked=${roomObj.checked} @input=${() => this.roomFilter(room.id)} style=${styleMap({ borderColor: room.eventColor, backgroundColor: room.eventColor})}>
                 <label class="form-check-label" for=${'room-' + room.id}>${room.title}</label>
               </div>`;})}
             </div>
@@ -195,9 +195,6 @@ export default class WebCalendar extends PageMixin(LitElement) {
   }
 
   renderCalendar(events?: IEvent[]): void {
-    const navEle = document.getElementsByTagName('nav');
-    const oneRem = parseFloat(getComputedStyle(document.documentElement).fontSize)
-
     let formatEvents: EventSourceInput = [];
     if (events) {
       formatEvents = events.map(event => {
@@ -263,12 +260,11 @@ export default class WebCalendar extends PageMixin(LitElement) {
       editable: true,
       dayMaxEvents: 3, // allow "more" link when too many events
       themeSystem: 'bootstrap',
-      height: window.innerHeight - (navEle? navEle[0].offsetHeight : 0) - 2 * oneRem,
+      height: 'auto',
       eventClick: (info) => {
         this.openModal(info.event);
       }
     };
-
 
     if (window.innerWidth < 780) {
       calendarConfig.plugins = [ listPlugin ];
