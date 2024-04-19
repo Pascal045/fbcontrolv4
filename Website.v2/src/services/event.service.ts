@@ -51,7 +51,7 @@ const eventConverter = {
       createdAt: data.createdAt,
       background: data.background,
       allDay: data.allDay,
-      seriesEndless: data.seriesEndless? data.seriesEndless : false,
+      seriesEndless: data.seriesEndless ? data.seriesEndless : false,
       seriesDuringHoliday: data.seriesDuringHoliday
     };
     if (data.seriesId) {
@@ -68,7 +68,7 @@ const eventConverter = {
 
 export class EventService {
 
-  static async createEvent(event: IEvent, seriesDate: Date| undefined = undefined, seriesEventDouble: boolean | undefined = undefined): Promise<void> {
+  static async createEvent(event: IEvent, seriesDate?: Date, seriesEventDouble?: boolean): Promise<void> {
     if (!seriesDate && !event.seriesEndless) {
       const validRoom = EventService.checkRoomValidity(event);
       if (validRoom) {
@@ -76,49 +76,49 @@ export class EventService {
       } else {
         throw new Error('Event is during a background event or an event has already been created in the same room and time');
       }
-    } else if ((seriesEventDouble != true && seriesDate && seriesDate > new Date()) || event.seriesEndless ) {
+    } else if ((seriesEventDouble !== true && seriesDate && seriesDate > new Date()) || event.seriesEndless) {
       const seriesId = nanoid();
       const oneYearFromNow = new Date(event.start.toDate());
       oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-      const seriesNr = event.seriesEndless ? EventService.getNrWeeksUntil(event.start.toDate(), oneYearFromNow) : EventService.getNrWeeksUntil(event.start.toDate(), seriesDate!);
-      
-      let nextEvent: IEvent = {...event, seriesNr, seriesId};
-      for (let i=seriesNr-1; i >= 0; i--) {
+      const targetDate = seriesDate ?? oneYearFromNow;
+      const seriesNr = event.seriesEndless ? EventService.getNrWeeksUntil(event.start.toDate(), oneYearFromNow) : EventService.getNrWeeksUntil(event.start.toDate(), targetDate);
+
+      let nextEvent: IEvent = { ...event, seriesNr, seriesId };
+      for (let i = seriesNr - 1; i >= 0; i--) {
         const validRoom = EventService.checkRoomValidity(event);
-        const valid = event.seriesDuringHoliday? true : EventService.checkValidity(nextEvent);
+        const valid = event.seriesDuringHoliday ? true : EventService.checkValidity(nextEvent);
+        if (valid && validRoom) {
+          EventService.saveEvent(nextEvent);
+        }
+        nextEvent = EventService.eventNextWeek(nextEvent, i, seriesId, seriesEventDouble);
+      }
+    } else if ((seriesEventDouble === true && seriesDate && seriesDate > new Date()) || event.seriesEndless) {
+      const seriesId = nanoid();
+      const oneYearFromNow = new Date(event.start.toDate());
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+      const targetDate = seriesDate ?? oneYearFromNow;
+      const seriesNr = event.seriesEndless ? EventService.getNrBiWeeksUntil(event.start.toDate(), oneYearFromNow) : EventService.getNrBiWeeksUntil(event.start.toDate(), targetDate);
+      let nextEvent: IEvent = { ...event, seriesNr, seriesId };
+      for (let i = seriesNr - 1; i >= 0; i--) {
+        const validRoom = EventService.checkRoomValidity(event);
+        const valid = event.seriesDuringHoliday ? true : EventService.checkValidity(nextEvent);
         if (valid && validRoom) {
           EventService.saveEvent(nextEvent);
         }
         nextEvent = EventService.eventNextWeek(nextEvent, i, seriesId, seriesEventDouble);
       }
     }
-    else if ((seriesEventDouble == true && seriesDate && seriesDate > new Date()) || event.seriesEndless ) {
-      const seriesId = nanoid();
-      const oneYearFromNow = new Date(event.start.toDate());
-      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-      const seriesNr = event.seriesEndless ? EventService.getNrBiWeeksUntil(event.start.toDate(), oneYearFromNow) : EventService.getNrBiWeeksUntil(event.start.toDate(), seriesDate!);
-      let nextEvent: IEvent = {...event, seriesNr, seriesId};
-      for (let i=seriesNr-1; i >= 0; i--) {
-        const validRoom = EventService.checkRoomValidity(event);
-        const valid = event.seriesDuringHoliday? true : EventService.checkValidity(nextEvent);
-        if (valid && validRoom) {
-          EventService.saveEvent(nextEvent);
-        }
-        nextEvent = EventService.eventNextWeek(nextEvent, i, seriesId, seriesEventDouble);
-      }
-    }
-    
   }
 
   static async updateEvent(event: IEvent): Promise<void> {
     const valid = EventService.checkRoomValidity(event);
-    if(valid) {
+    if (valid) {
       await EventService.updateSingleEvent(event);
     } else {
       throw new Error('Event is during a background event or an event has already been created in the same room and time');
     }
   }
-  
+
   static async deleteEvent(eventId: IEvent['id'], allSeries = false): Promise<void> {
     if (allSeries) {
       const firstEvent = store.getState().events.find(event => event.id === eventId);
@@ -134,7 +134,7 @@ export class EventService {
       await EventService.removeEvent(eventId);
     }
   }
-  
+
   static async loadEvents(): Promise<void> {
     const eventsRef = collection(firestore, 'events').withConverter(eventConverter);
     const snapshot = await getDocs(eventsRef);
@@ -166,7 +166,7 @@ export class EventService {
     const backgroundEvents = store.getState().events.filter(e => e.background);
     backgroundEvents.forEach(backEvent => {
       if (event.start.toDate() >= backEvent.start.toDate() && event.start.toDate() <= backEvent.end.toDate() ||
-      event.end.toDate() >= backEvent.start.toDate() && event.end.toDate() <= backEvent.end.toDate()) {
+        event.end.toDate() >= backEvent.start.toDate() && event.end.toDate() <= backEvent.end.toDate()) {
         validity = false;
       }
     });
@@ -182,7 +182,7 @@ export class EventService {
       const roomEventStart = roomEvent.start.toDate();
       roomEventStart.setMinutes(roomEventStart.getMinutes() + 1);
       if (event.start.toDate() >= roomEventStart && event.start.toDate() <= roomEventEnd ||
-      event.end.toDate() >= roomEventStart && event.end.toDate() <= roomEventEnd) {
+        event.end.toDate() >= roomEventStart && event.end.toDate() <= roomEventEnd) {
         validity = false;
       }
     });
@@ -200,7 +200,7 @@ export class EventService {
         inEnd >= backStart && inEnd >= backEnd)
         ||
         (inStart >= backStart && inStart <= backEnd &&
-        inEnd >= backStart && inEnd <= backEnd)) {
+          inEnd >= backStart && inEnd <= backEnd)) {
         console.log('Delete Event: ', backEvent.title);
         await EventService.deleteEvent(backEvent.id);
       }
@@ -217,8 +217,7 @@ export class EventService {
   }
 
   private static eventNextWeek(event: IEvent, seriesNr: number, seriesId: string, seriesEventDouble: boolean | undefined = undefined): IEvent {
-    if(seriesEventDouble == true)  
-    {
+    if (seriesEventDouble == true) {
       seriesNr
       const newEvent: IEvent = {
         ...event,
@@ -226,7 +225,7 @@ export class EventService {
         end: Timestamp.fromMillis(event.end.seconds * 1000 + 7 * 24 * 60 * 60 * 1000 * 2),
         seriesId,
         seriesNr
-      } 
+      }
       return newEvent;
     } else {
       const newEvent: IEvent = {
@@ -239,8 +238,8 @@ export class EventService {
       return newEvent;
     }
   }
-  
- 
+
+
 
   private static async updateSingleEvent(event: IEvent): Promise<void> {
     const eventRef = doc(firestore, 'events/', event.id).withConverter(eventConverter);
@@ -250,8 +249,8 @@ export class EventService {
 
   private static async saveEvent(event: IEvent): Promise<void> {
     const eventsColl = collection(firestore, 'events').withConverter(eventConverter);
-    const newEvent = await addDoc(eventsColl, {...event});
-    store.dispatch(addEvent({ ...event, id: newEvent.id}));
+    const newEvent = await addDoc(eventsColl, { ...event });
+    store.dispatch(addEvent({ ...event, id: newEvent.id }));
   }
 
   private static async removeEvent(eventId: string): Promise<void> {

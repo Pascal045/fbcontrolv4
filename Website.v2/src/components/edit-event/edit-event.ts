@@ -222,7 +222,7 @@ export default class EditEvent extends PageMixin(LitElement) {
                     </div>
 
                     <div class="form-check" data-bs-toggle="tooltip" data-bs-placement="top" title="Es sind Ferien!">
-                      <input class="form-check-input" type="checkbox" ?checked=${this.event? this.event.background : false} id="edit-background" @input=${() => this.event!.background = !this.event?.background} ?disabled=${!this.editMode}>
+                      <input class="form-check-input" type="checkbox" ?checked=${this.event? this.event.background : false} id="edit-background" @input=${this.handleBackgroundInputChange} ?disabled=${!this.editMode}>
                       <label class="form-check-label" for="edit-background">
                         Es sind Ferien.
                       </label>
@@ -478,5 +478,11 @@ export default class EditEvent extends PageMixin(LitElement) {
   getDateFromInput(date: string): number[] {
     const arrDate = date.split('-');
     return arrDate.map(d => Number(d));
+  }
+
+  handleBackgroundInputChange(): void {
+    if (this.event) {
+      this.event.background = !this.event.background;
+    }
   }
 }

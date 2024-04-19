@@ -6,13 +6,13 @@ import { IState } from '../../interfaces/state.interface';
 import { IUser, ROLE } from '../../interfaces/user.interface';
 import { RoomService } from '../../services/room.service';
 import { UserService } from '../../services/user.service';
-import * as configFile from '../../config.json';
+import configFile from '../../config.json';
 
 import './web-admin.scss';
 import { EventService } from '../../services/event.service';
 
-const version = configFile.version;
-const copy = configFile.copy;
+const version: string = configFile.version;
+const copy: string = configFile.copy;
 
 @customElement('web-admin')
 export default class WebAdmin extends PageMixin(LitElement) {

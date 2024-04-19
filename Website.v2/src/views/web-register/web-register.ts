@@ -3,11 +3,11 @@ import { customElement, html, LitElement, property, query, TemplateResult } from
 import { PageMixin } from '../../client-packages/page.mixin';
 import { router } from '../../client-packages/router';
 import { AuthService } from '../../services/auth.service';
-import * as configFile from '../../config.json';
+import configFile from '../../config.json';
 
 import './web-register.scss';
-const version = configFile.version;
-const copy = configFile.copy;
+const version: string = configFile.version;
+const copy: string = configFile.copy;
 @customElement('web-register')
 export default class WebRegister extends PageMixin(LitElement) {
   @query('form')

@@ -1,6 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
 import { customElement, html, LitElement, property, query, TemplateResult } from 'lit-element';
-import SendmailTransport from 'nodemailer/lib/sendmail-transport';
 import { PageMixin } from '../../client-packages/page.mixin';
 import { IEvent } from '../../interfaces/event.interface';
 import { IRoom } from '../../interfaces/room.interface';
